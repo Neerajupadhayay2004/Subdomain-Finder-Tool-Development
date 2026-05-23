@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Scan {
+  id          String      @id @default(cuid())
+  domain      String
+  status      String      // pending, running, completed, failed
+  startedAt   DateTime    @default(now())
+  completedAt DateTime?
+  analysis    String?     // AI Analysis result
+  subdomains  Subdomain[]
+}
+
+model Subdomain {
+  id          String   @id @default(cuid())
+  scanId      String
+  domain      String
+  ip          String?
+  status      Int?     // HTTP status code
+  provider    String   // e.g., "Shodan", "VirusTotal", "DNS"
+  abuseScore  Int?     // IP reputation score from AbuseIPDB
+  screenshot  String?  // URL to screenshot
+  createdAt   DateTime @default(now())
+  scan        Scan     @relation(fields: [scanId], references: [id], onDelete: Cascade)
+}
